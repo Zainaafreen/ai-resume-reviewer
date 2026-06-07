@@ -6,9 +6,11 @@ const API_URL = process.env.REACT_APP_API_URL || '';
 const scoreColor = (s) => s >= 75 ? 'var(--good)' : s >= 50 ? 'var(--warn)' : 'var(--bad)';
 const gradeColor = (g) => ['A+','A','A-'].includes(g) ? 'var(--good)' : ['B+','B','B-'].includes(g) ? 'var(--warn)' : 'var(--bad)';
 
-function DropZone({ onFile, file }) {
+function DropZone({ onFile, file, inputRef }) {
   const [dragging, setDragging] = useState(false);
-  const inputRef = useRef();
+  const localRef = useRef();
+  const ref = inputRef || localRef;
+
   const handleDrop = useCallback((e) => {
     e.preventDefault(); setDragging(false);
     const f = e.dataTransfer.files[0];
@@ -21,9 +23,9 @@ function DropZone({ onFile, file }) {
       onDragOver={e => { e.preventDefault(); setDragging(true); }}
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
-      onClick={() => inputRef.current.click()}
+      onClick={() => ref.current.click()}
     >
-      <input ref={inputRef} type="file" accept=".pdf" hidden onChange={e => e.target.files[0] && onFile(e.target.files[0])} />
+      <input ref={ref} type="file" accept=".pdf" hidden onChange={e => e.target.files[0] && onFile(e.target.files[0])} />
       <div className="dropzone-icon-wrap">
         {file ? (
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
@@ -52,7 +54,6 @@ function Results({ data }) {
 
   return (
     <div>
-      {/* Score strip */}
       <div className="score-strip">
         <div className="score-main">
           <span className="score-number" style={{ color: scoreColor(data.ats_score) }}>{data.ats_score}</span>
@@ -72,7 +73,6 @@ function Results({ data }) {
         </div>
       </div>
 
-      {/* Job match */}
       {data.job_match && (
         <div className="job-match-bar">
           <div className="jm-col">
@@ -86,7 +86,6 @@ function Results({ data }) {
         </div>
       )}
 
-      {/* Tabs */}
       <div className="tabs">
         {tabs.map(t => (
           <button key={t} className={`tab-btn ${tab===t?'active':''}`} onClick={() => setTab(t)}>
@@ -95,7 +94,6 @@ function Results({ data }) {
         ))}
       </div>
 
-      {/* Overview */}
       {tab === 'overview' && (
         <div className="tab-content section-grid">
           {Object.entries(data.sections).map(([key, val]) => (
@@ -116,7 +114,6 @@ function Results({ data }) {
         </div>
       )}
 
-      {/* Gaps */}
       {tab === 'gaps' && (
         <div className="tab-content gaps-list">
           {data.gaps.map((g, i) => (
@@ -131,7 +128,6 @@ function Results({ data }) {
         </div>
       )}
 
-      {/* Improvements */}
       {tab === 'improvements' && (
         <div className="tab-content improvements-list">
           {data.improvements.map((imp, i) => (
@@ -147,7 +143,6 @@ function Results({ data }) {
         </div>
       )}
 
-      {/* Keywords */}
       {tab === 'keywords' && (
         <div className="tab-content">
           <div className="kw-top">
@@ -179,6 +174,23 @@ export default function App() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const resultsRef = useRef();
+  const uploadSectionRef = useRef();
+  const fileInputRef = useRef();
+
+  const handleNavUpload = (e) => {
+    e.preventDefault();
+    uploadSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => fileInputRef.current?.click(), 450);
+  };
+
+  const handleNavFeedback = (e) => {
+    e.preventDefault();
+    if (result) {
+      resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      uploadSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   const analyze = async () => {
     if (!file) { setError('Please upload a PDF resume first.'); return; }
@@ -201,16 +213,14 @@ export default function App() {
 
   return (
     <div className="app">
-      {/* Header */}
       <header className="header">
         <div className="logo">Résumé<span className="logo-dot">·</span>Critic</div>
         <nav className="nav">
-          <a href="#upload">Upload</a>
-          <a href="#upload" className="nav-cta">Get Feedback →</a>
+          <a href="#upload" onClick={handleNavUpload}>Upload</a>
+          <a href="#feedback" onClick={handleNavFeedback} className="nav-cta">Get Feedback →</a>
         </nav>
       </header>
 
-      {/* Masthead */}
       <section className="masthead">
         <div className="masthead-left">
           <div className="masthead-kicker">AI Resume Analysis</div>
@@ -245,7 +255,7 @@ export default function App() {
             {[
               ['01', 'Upload', 'Drop your PDF resume into the analyzer'],
               ['02', 'Parse', 'We extract and structure every section'],
-              ['03', 'Score', 'Gemini AI rates ATS compatibility across 6 dimensions'],
+              ['03', 'Score', 'Groq AI rates ATS compatibility across 6 dimensions'],
               ['04', 'Fix', 'Get prioritized, specific improvements with examples'],
             ].map(([n, t, d]) => (
               <div key={n} className="how-mini-item">
@@ -257,11 +267,10 @@ export default function App() {
         </div>
       </section>
 
-      {/* Upload */}
-      <section className="upload-section" id="upload">
+      <section className="upload-section" id="upload" ref={uploadSectionRef}>
         <div className="upload-label">Submit your résumé</div>
         <div className="upload-grid">
-          <DropZone onFile={setFile} file={file} />
+          <DropZone onFile={setFile} file={file} inputRef={fileInputRef} />
           <div className="jd-side">
             <div className="jd-side-label">
               Job description <span className="jd-optional">(optional — improves ATS match)</span>
@@ -283,7 +292,6 @@ export default function App() {
         </div>
       </section>
 
-      {/* Loading */}
       {loading && (
         <div className="loading-bar-wrap">
           <div className="loading-track"><div className="loading-fill" /></div>
@@ -291,9 +299,8 @@ export default function App() {
         </div>
       )}
 
-      {/* Results */}
       {result && (
-        <section className="results-section" ref={resultsRef}>
+        <section className="results-section" id="feedback" ref={resultsRef}>
           <div className="results-header-bar">
             <h2>Analysis Report</h2>
             <button className="reset-btn" onClick={() => { setResult(null); setFile(null); setJobDesc(''); }}>
@@ -306,7 +313,7 @@ export default function App() {
 
       <footer className="footer">
         <span className="footer-logo">Résumé·Critic</span>
-        <span>React + Flask + Gemini 1.5 Flash · Free & open source</span>
+        <span>React + Flask + Groq · Free & open source</span>
       </footer>
     </div>
   );

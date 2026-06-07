@@ -8,7 +8,7 @@ Upload a PDF resume and get instant AI feedback: ATS score, gap analysis, keywor
 |-------|------|-----|
 | Frontend | React 18 | Fast, component-based UI |
 | Backend | Flask + gunicorn | Lightweight Python API |
-| AI | Google Gemini 1.5 Flash | Free tier, no credit card needed |
+| AI | GROk API KEY | Free tier, no credit card needed |
 | PDF Parsing | pypdf | Pure-Python, no system deps |
 | Deployment | Render (free tier) | Free, zero-config deploys |
 
@@ -160,7 +160,7 @@ Returns `{"status": "ok"}` — use for uptime monitoring.
 ### Backend
 | Variable | Description |
 |----------|-------------|
-| `GEMINI_API_KEY` | Your Google Gemini API key (required) |
+| `GROK_API_KEY` | Your Grok API key (required) |
 | `PORT` | Server port (default: 5000) |
 | `DEBUG` | Enable Flask debug mode (default: false) |
 
