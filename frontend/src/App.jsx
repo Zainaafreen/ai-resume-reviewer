@@ -312,8 +312,9 @@ export default function App() {
       )}
 
       <footer className="footer">
-        <span className="footer-logo">Résumé·Critic</span>
-        <span>React + Flask + Groq · Free & open source</span>
+        <span className="footer-logo">Resume Critic</span>
+        <span>Analyze • Improve • Get hired</span>
+        <span>© {new Date().getFullYear()} Zaina Afreen A P</span>
       </footer>
     </div>
   );
