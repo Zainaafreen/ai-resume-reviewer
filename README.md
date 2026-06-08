@@ -1,6 +1,6 @@
-# ResumeAI — AI-Powered Resume Reviewer
+# Résumé·Critic — AI-Powered Resume Reviewer
 
-Upload a PDF resume and get instant AI feedback: ATS score, gap analysis, keyword density, and prioritized improvements — powered by Claude Sonnet.
+Upload a PDF resume and get instant AI feedback: ATS score, gap analysis, keyword density, and prioritized improvements — powered by Groq + Llama 3.3 70B.
 
 ## Stack
 
@@ -8,9 +8,9 @@ Upload a PDF resume and get instant AI feedback: ATS score, gap analysis, keywor
 |-------|------|-----|
 | Frontend | React 18 | Fast, component-based UI |
 | Backend | Flask + gunicorn | Lightweight Python API |
-| AI | GROk API KEY | Free tier, no credit card needed |
+| AI | Groq + Llama 3.3 70B | Free tier, no credit card, ultra-fast inference |
 | PDF Parsing | pypdf | Pure-Python, no system deps |
-| Deployment | Render (free tier) | Free, zero-config deploys |
+| Deployment | Render + Vercel (free tier) | Zero-config, permanently free |
 
 ---
 
@@ -30,10 +30,12 @@ source venv/bin/activate      # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
 cp .env.example .env
-# Edit .env and add your GEMINI_API_KEY
+# Edit .env and add your GROQ_API_KEY
 ```
 
-Get a **free** Gemini API key (no credit card) at: https://aistudio.google.com/app/apikey
+Get a **free** Groq API key (no credit card) at: https://console.groq.com → API Keys → Create API Key
+
+The key will start with `gsk_...`
 
 ```bash
 python app.py
@@ -65,19 +67,19 @@ npm start
    - **Build Command**: `pip install -r requirements.txt`
    - **Start Command**: `gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120`
    - **Environment**: Python 3
-5. Add environment variable: `GEMINI_API_KEY = your_key_here`
-6. Deploy — you get a URL like `https://resumeai-backend.onrender.com`
+5. Add environment variable: `GROQ_API_KEY = your_key_here`
+6. Deploy — you get a URL like `https://resume-critic-backend.onrender.com`
 
 ### Frontend → Vercel (Free tier)
 
 1. Go to https://vercel.com → New Project → Import your GitHub repo
 2. Set **Root Directory** to `frontend`
-3. Add environment variable: `REACT_APP_API_URL = https://resumeai-backend.onrender.com`
+3. Add environment variable: `REACT_APP_API_URL = https://resume-critic-backend.onrender.com`
 4. Deploy — done!
 
 ### Alternative: Railway.app (also free)
 - Both frontend and backend can be deployed to Railway
-- Add `ANTHROPIC_API_KEY` as an environment variable
+- Add `GROQ_API_KEY` as an environment variable
 - Railway auto-detects Python/Node and uses the Procfile
 
 ---
@@ -87,7 +89,7 @@ npm start
 ```
 ai-resume-reviewer/
 ├── backend/
-│   ├── app.py              # Flask API — PDF parsing + Claude integration
+│   ├── app.py              # Flask API — PDF parsing + Groq integration
 │   ├── requirements.txt    # Python dependencies
 │   ├── Procfile            # For Railway/Render deployment
 │   ├── runtime.txt         # Python version pin
@@ -151,7 +153,7 @@ Returns `{"status": "ok"}` — use for uptime monitoring.
 - **Improvement Suggestions** — High/medium/low priority with concrete examples
 - **Keyword Analysis** — Found vs missing keywords, density score
 - **Job Match** — Best-fit roles and industries
-- **Optional JD Upload** — Paste a job description for tailored ATS scoring
+- **Optional JD Paste** — Add a job description for tailored ATS scoring
 
 ---
 
@@ -160,11 +162,22 @@ Returns `{"status": "ok"}` — use for uptime monitoring.
 ### Backend
 | Variable | Description |
 |----------|-------------|
-| `GROK_API_KEY` | Your Grok API key (required) |
+| `GROQ_API_KEY` | Your Groq API key — starts with `gsk_` (required) |
 | `PORT` | Server port (default: 5000) |
 | `DEBUG` | Enable Flask debug mode (default: false) |
 
 ### Frontend
 | Variable | Description |
 |----------|-------------|
-| `REACT_APP_API_URL` | Backend API URL (empty = same origin) |
+| `REACT_APP_API_URL` | Backend API URL (empty = same origin proxy) |
+
+---
+
+## Troubleshooting
+
+| Error | Fix |
+|-------|-----|
+| `GROQ_API_KEY not set` | Create `backend/.env` and add your key |
+| `model_decommissioned` | Update model in `app.py` to `llama-3.3-70b-versatile` |
+| `proxies` TypeError | Run `pip install httpx==0.27.0` |
+| PDF text extraction fails | Ensure PDF is not a scanned image (needs selectable text) |
